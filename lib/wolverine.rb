@@ -5,6 +5,8 @@ require 'wolverine/version'
 require 'wolverine/configuration'
 require 'wolverine/script'
 require 'wolverine/path_component'
+require 'wolverine/remote_path_component'
+require 'wolverine/remote_script_mapper'
 require 'wolverine/lua_error'
 
 class Wolverine

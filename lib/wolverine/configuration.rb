@@ -1,5 +1,5 @@
 class Wolverine
-  class Configuration < Struct.new(:redis, :script_path, :instrumentation)
+  class Configuration < Struct.new(:redis, :script_path, :instrumentation, :remote)
 
     # @return [Redis] the redis connection actively in use by Wolverine
     def redis
@@ -27,6 +27,10 @@ class Wolverine
     # @return [Pathname] the path wolverine will check for scripts
     def script_path
       super || @script_path ||= Rails.root + 'app/wolverine'
+    end
+
+    def remote
+      super || @remote ||= false
     end
   end
 end
