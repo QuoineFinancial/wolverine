@@ -7,6 +7,7 @@ require 'wolverine/script'
 require 'wolverine/path_component'
 require 'wolverine/remote_path_component'
 require 'wolverine/remote_script_mapper'
+require 'wolverine/remote_script'
 require 'wolverine/lua_error'
 
 class Wolverine

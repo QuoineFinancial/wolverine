@@ -1,34 +1,29 @@
 class Wolverine
   class RemotePathComponent
     class RemoteScriptNotFound < StandardError ; end
+    attr_reader :path, :script_map
 
-    def initialize(path, script_map)
+    def initialize(path, script_map, options = {})
       @path = path
       @script_map = script_map
+      @options = options
+      @redis = options[:redis] || Wolverine.redis
+      @config = options[:config] || Wolverine.config
     end
 
     def method_missing sym, *args
-      create_method sym, *args
-      send sym, *args
-    end
-
-    private
-    def define_directory_method(path, sym, script_map)
-      dir = RemotePathComponent.new(path, script_map)
-      cb = proc { dir }
-      define_metaclass_method(sym, &cb)
-    end
-
-    def create_method sym, *args
-      if file?(path = @path + "#{sym}.lua")
-        define_script_method path, sym, *args
+      if sha = file?(path = @path + "#{sym}.lua")
+        redis, options = @redis, @options
+        script = Wolverine::RemoteScript.new(sha, options)
+        script.call(redis, *args)
       elsif directory?(path = @path + sym.to_s)
-        define_directory_method path, sym
+        RemotePathComponent.new(path, script_map)
       else
-        raise MissingTemplate
+        raise RemoteScriptNotFound
       end
     end
 
+    private
     def directory?(path)
       @script_map.each do |key, val| 
         Pathname.new(key).dirname.ascend do |map_path|
@@ -40,15 +35,9 @@ class Wolverine
 
     def file?(path)
       @script_map.each do |key, val| 
-        Pathname.new(key).ascend do |map_path|
-          return true if map_path == path
-        end
+        return val if Pathname.new(key) == path
       end
-    end
-
-    def define_metaclass_method sym, &block
-      metaclass = class << self; self; end
-      metaclass.send(:define_method, sym, &block)
+      false
     end
   end
 end
