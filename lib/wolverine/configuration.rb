@@ -1,5 +1,5 @@
 class Wolverine
-  class Configuration < Struct.new(:redis, :script_path, :instrumentation, :remote)
+  class Configuration < Struct.new(:redis, :script_path, :instrumentation, :remote, :remote_script_map_key)
 
     # @return [Redis] the redis connection actively in use by Wolverine
     def redis
@@ -31,6 +31,10 @@ class Wolverine
 
     def remote
       super || @remote ||= false
+    end
+
+    def remote_script_map_key
+      super || @remote_script_map_key ||= 'SHA:mapping'
     end
   end
 end
