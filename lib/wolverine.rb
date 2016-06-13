@@ -72,6 +72,10 @@ class Wolverine
     config.remote
   end
 
+  def self.remote?
+    config.remote
+  end
+
   def reset!
     @root_directory = nil
     reset_cached_methods
@@ -115,7 +119,12 @@ class Wolverine
   end
 
   def root_directory
-    @root_directory ||= PathComponent.new(config.script_path, {:cache_to => self, :config => config, :redis => redis})
+    @root_directory ||= 
+      if remote?
+        RemotePathComponent.new('', remote_script_map, {:config => config, :redis => redis})
+      else
+        PathComponent.new(config.script_path, {:cache_to => self, :config => config, :redis => redis})
+      end
   end
 
   def cached_methods
