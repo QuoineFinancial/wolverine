@@ -107,7 +107,7 @@ class Wolverine
   def self.root_directory
     @root_directory ||= 
       if remote?
-        RemotePathComponent.new('', remote_script_map)
+        RemotePathComponent.new(Pathname.new(''), remote_script_map)
       else
         PathComponent.new(config.script_path, {:cache_to => self})
       end
@@ -126,7 +126,7 @@ class Wolverine
   def root_directory
     @root_directory ||= 
       if remote?
-        RemotePathComponent.new('', remote_script_map, {:config => config, :redis => redis})
+        RemotePathComponent.new(Pathname.new(''), remote_script_map, {:config => config, :redis => redis})
       else
         PathComponent.new(config.script_path, {:cache_to => self, :config => config, :redis => redis})
       end
