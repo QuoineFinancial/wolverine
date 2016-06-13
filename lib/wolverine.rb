@@ -99,6 +99,11 @@ class Wolverine
     @remote_script_map ||= RemoteScriptMapper.new(redis, config.remote_script_map_key).script_map
   end
 
+  def self.remote_script_map
+    return nil unless remote?
+    @remote_script_map ||= RemoteScriptMapper.new(redis, config.remote_script_map_key).script_map
+  end
+
   def self.root_directory
     @root_directory ||= 
       if remote?
