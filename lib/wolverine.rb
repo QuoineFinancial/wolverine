@@ -5,6 +5,9 @@ require 'wolverine/version'
 require 'wolverine/configuration'
 require 'wolverine/script'
 require 'wolverine/path_component'
+require 'wolverine/remote_path_component'
+require 'wolverine/remote_script_mapper'
+require 'wolverine/remote_script'
 require 'wolverine/lua_error'
 
 class Wolverine
@@ -65,6 +68,14 @@ class Wolverine
     config.redis
   end
 
+  def remote?
+    config.remote
+  end
+
+  def self.remote?
+    config.remote
+  end
+
   def reset!
     @root_directory = nil
     reset_cached_methods
@@ -83,9 +94,23 @@ class Wolverine
   end
 
   private
+  def remote_script_map
+    return nil unless remote?
+    @remote_script_map ||= RemoteScriptMapper.new(redis, config.remote_script_map_key).script_map
+  end
+
+  def self.remote_script_map
+    return nil unless remote?
+    @remote_script_map ||= RemoteScriptMapper.new(redis, config.remote_script_map_key).script_map
+  end
 
   def self.root_directory
-    @root_directory ||= PathComponent.new(config.script_path, {:cache_to => self})
+    @root_directory ||= 
+      if remote?
+        RemotePathComponent.new(Pathname.new(''), remote_script_map)
+      else
+        PathComponent.new(config.script_path, {:cache_to => self})
+      end
   end
 
   def self.cached_methods
@@ -99,7 +124,12 @@ class Wolverine
   end
 
   def root_directory
-    @root_directory ||= PathComponent.new(config.script_path, {:cache_to => self, :config => config, :redis => redis})
+    @root_directory ||= 
+      if remote?
+        RemotePathComponent.new(Pathname.new(''), remote_script_map, {:config => config, :redis => redis})
+      else
+        PathComponent.new(config.script_path, {:cache_to => self, :config => config, :redis => redis})
+      end
   end
 
   def cached_methods

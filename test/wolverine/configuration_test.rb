@@ -42,5 +42,16 @@ class Wolverine
       assert_equal :omg, config.instrumentation.call(1,2,3)
     end
 
+    def test_default_remote
+      config = Wolverine::Configuration.new
+      assert_equal false, config.remote
+    end
+
+    def test_setting_remote
+      config = Wolverine::Configuration.new
+      config.remote = true
+      assert_equal true, config.remote
+    end
+
   end
 end
